@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+            <meta content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width" name="viewport">
+                <title>
+                </title>
+                <link href="manifest.json" rel="manifest">
+                    <!-- un-comment this code to enable service worker
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(() => console.log('service worker installed'))
+          .catch(err => console.log('Error', err));
+      }
+    </script>-->
+                    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+                        <link href="css/style.css" rel="stylesheet">
+                            <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+    <link href="css/ionic.app.css" rel="stylesheet">
+    -->
+                            <!-- ionic/angularjs js -->
+                            <script src="lib/ionic/js/ionic.bundle.js">
+                            </script>
+                            <script src="lib/ngCordova/dist/ng-cordova.js">
+                            </script>
+                            <!-- cordova script (this will be a 404 during development) -->
+                            <script src="cordova.js">
+                            </script>
+                            <!-- your app's js -->
+                            <script src="js/app.js">
+                            </script>
+                            <script src="js/hub.js">
+                            </script>
+                        </link>
+                    </link>
+                </link>
+            </meta>
+        </meta>
+    </head>
+    <body ng-app="hub" ng-controller="HubCtrl">
+        <ion-pane>
+            <ion-header-bar class="bar-stable" align-title="center">
+                <button class="button icon ion-refresh" ng-click="refresh()">
+                    Update
+                </button>
+                <h1 class="title">
+                    Place Details
+                </h1>
+                <button class="button icon ion-plus" ng-click="oModalNew.show()">
+                    Add {{appName}}
+                </button>
+            </ion-header-bar>
+            <ion-content class="has-header has-footer">
+                <div class="card">
+                    <div class="item item-thumbnail-left">
+                        <img ng-if="hub.images.main == null" ng-src="{{hub.images[0]}}">
+                        <img ng-if="hub.images.main != null" ng-src="{{hub.images.main}}">
+                        {{hub.name}}
+                    </div>
+                    <div class="item item-body item-button-right">
+                        {{hub.description}}
+                        <div class="buttons">
+                            <button class="button button-positive" ng-click="oModalEdit.show()">
+                                <i class="icon ion-edit">
+                                </i>
+                            </button>
+                            <button class="button button-assertive" ng-click="delHub(hub.id)">
+                                <i class="icon ion-trash-a">
+                                </i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="item item-text-wrap">
+                        Contact Name: {{hub.contact_name}}
+                    </div>
+                    <div class="item item-text-wrap">
+                        Contact Number: {{hub.contact_number}}
+                    </div>
+                    <div class="item item-text-wrap" ng-show="hub.alert_email_1 != undefined && hub.alert_email_1 != ''">
+                        Alert Email 1: {{hub.alert_email_1}}
+                    </div>
+                    <div class="item item-text-wrap" ng-show="hub.alert_email_2 != undefined && hub.alert_email_2 != ''">
+                        Alert Email 2: {{hub.alert_email_2}}
+                    </div>
+                    <div class="item item-text-wrap" ng-show="hub.alert_email_3 != undefined && hub.alert_email_3 != ''">
+                        Alert Email 3: {{hub.alert_email_3}}
+                    </div>
+                    <div class="item item-text-wrap" ng-show="hub.alert_sms_1 != undefined && hub.alert_sms_1 != ''">
+                        Alert SMS 1: {{hub.alert_sms_1}}
+                    </div>
+                    <div class="item item-text-wrap" ng-show="hub.alert_sms_2 != undefined && hub.alert_sms_2 != ''">
+                        Alert SMS 2: {{hub.alert_sms_2}}
+                    </div>
+                    <div class="item item-text-wrap" ng-show="hub.alert_sms_3 != undefined && hub.alert_sms_3 != ''">
+                        Alert SMS 3: {{hub.alert_sms_3}}
+                    </div>
+                </div>
+                <ion-item class="item-icon-right" ng-click="goTrap(trap.unique_code)" ng-repeat="trap in traps" ng-style="{'background-color':trap.color}">
+                    <div class="item item-thumbnail-left" ng-style="{'background-color':trap.color}">
+                        <img ng-if="trap.images[0].thumbnail == null" ng-src="{{trap.images[0]}}">
+                        <img ng-if="trap.images[0].thumbnail != null" ng-src="{{trap.images[0].thumbnail}}">
+                        <h2>{{trap.name}} {{trap.unique_code}}</h2>
+                        <div ng-show="trap.is_heartbeat_ok == 0">
+                          Signal loss
+                        </div>
+                        <div ng-show="trap.is_heartbeat_ok == 1 && trap.status == 0">
+                          Pending Signal
+                        </div>
+                        <div ng-show="trap.is_heartbeat_ok == 1 && trap.status == 1">
+                          Ready at: {{trap.ready_at | date: 'yyyy/MM/dd HH:mm'}}
+                        </div>
+                        <div ng-show="trap.is_heartbeat_ok == 1 && trap.status == 2">
+                          Captured at: {{trap.captured_at | date: 'yyyy/MM/dd HH:mm'}}
+                        </div>
+                    </div>
+                </ion-item>
+            </ion-content>
+        </ion-pane>
+        <div class="bar bar-footer">
+            <button class="button icon-left ion-home button-positive" ng-click="goHome()">
+                Home
+            </button>
+            <button class="button icon-left ion-log-out button-assertive" ng-click="logout()">
+                Log Out
+            </button>
+        </div>
+        <script id="templates/modal_edit.html" type="text/ng-template">
+            <ion-modal-view>
+        <ion-header-bar class="bar bar-header bar-positive">
+          <h1 class="title">Update Place</h1>
+          <button class="button button-clear button-primary" ng-click="cancelUpdate()">Cancel</button>
+        </ion-header-bar>
+        <ion-content class="padding">
+          <div class="list">
+            <label class="item item-input">
+              <span class="input-label">Place Name</span>
+              <input ng-model="hub.name" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Description</span>
+              <input ng-model="hub.description" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Contact Name</span>
+              <input ng-model="hub.contact_name" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Contact Number</span>
+              <input ng-model="hub.contact_number" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Images</span>
+              <img class="full-image" ng-if="hub.images.main == null" ng-src="{{hub.images[0]}}" style="width:20%; padding: 5px 5px 5px 5px;"/>
+              <img class="full-image" ng-if="hub.images.main != null" ng-src="{{hub.images.main}}" style="width:20%; padding: 5px 5px 5px 5px;"/>
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Alert Email 1</span>
+              <input type="text" ng-model="hub.alert_email_1" />
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Alert Email 2</span>
+              <input type="text" ng-model="hub.alert_email_2" />
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Alert Email 3</span>
+              <input type="text" ng-model="hub.alert_email_3" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Alert SMS 1</span>
+                <input type="text" ng-model="hub.alert_sms_1" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Alert SMS 2</span>
+                <input type="text" ng-model="hub.alert_sms_2" />
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Alert SMS 3</span>
+                <input type="text" ng-model="hub.alert_sms_3" />
+            </label>
+            <button class="button button-full button-positive" ng-click="updateHub(hub)">Update Place</button>
+          </div>
+        </ion-content>
+      </ion-modal-view>
+        </script>
+        <script id="templates/modal_new.html" type="text/ng-template">
+            <ion-modal-view>
+        <ion-header-bar class="bar bar-header bar-positive">
+          <h1 class="title">New {{appName}}</h1>
+          <button class="button button-clear button-primary" ng-click="oModalNew.hide()">Cancel</button>
+        </ion-header-bar>
+        <ion-content class="padding">
+          <div class="list">
+            <label class="item item-input">
+              <span class="input-label">{{appName}} Name</span>
+              <input ng-model="newTrap.name" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Description</span>
+              <input ng-model="newTrap.description" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">QR Code</span>
+              <button class="button icon-left ion-qr-scanner button-energized" ng-click="scanBarcode()">Scan</button>
+            </label>            
+            <label class="item item-input">
+              <span class="input-label">Images</span>
+                <button class="button icon-left ion-camera button-royal" ng-click="takePic()">Take photos</button>
+            </label>
+            <button class="button button-full button-positive" ng-click="addTrap(newTrap)">Add {{appName}}</button>
+          </div>
+          <ion-scroll direction="x" style="overflow: scroll; white-space: nowrap;">
+            <img ng-click="showPic($index)" ng-repeat="image in collection" ng-src="{{image}}" style="width:20%; padding: 5px 5px 5px 5px;"/>
+          </ion-scroll>
+        </ion-content>
+      </ion-modal-view>
+        </script>
+        <script id="templates/modal_image.html" type="text/ng-template">
+            <ion-modal-view>
+        <ion-content class="padding">
+          <img ng-src={{hub.images[indexOfImage]}} style="width:100%;overflow: scroll;" ng-click="oModalImage.hide()"/>
+        </ion-content>
+      </ion-modal-view>
+        </script>
+    </body>
+</html>

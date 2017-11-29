@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+            <meta content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width" name="viewport">
+                <title>
+                </title>
+                <link href="manifest.json" rel="manifest">
+                    <!-- un-comment this code to enable service worker
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(() => console.log('service worker installed'))
+          .catch(err => console.log('Error', err));
+      }
+    </script>-->
+                    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+                        <link href="css/style.css" rel="stylesheet">
+                            <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+    <link href="css/ionic.app.css" rel="stylesheet">
+    -->
+                            <!-- ionic/angularjs js -->
+                            <script src="lib/ionic/js/ionic.bundle.js">
+                            </script>
+                            <script src="lib/ngCordova/dist/ng-cordova.js">
+                            </script>
+                            <!-- cordova script (this will be a 404 during development) -->
+                            <script src="cordova.js">
+                            </script>
+                            <!-- your app's js -->
+                            <script src="js/app.js">
+                            </script>
+                            <script src="js/trap.js">
+                            </script>
+                        </link>
+                    </link>
+                </link>
+            </meta>
+        </meta>
+    </head>
+    <body ng-app="trap" ng-controller="TrapCtrl">
+        <ion-pane>
+            <ion-header-bar class="bar-stable">
+                <h1 class="title">
+                    {{appName}} Details
+                </h1>
+            <button class="button icon-left ion-arrow-return-left button-energized pull-right" ng-click="return()">
+                Return
+            </button>
+            </ion-header-bar>
+            <ion-content class="has-header has-footer">
+                <div class="card">
+                    <ion-list>
+                        <ion-item>
+                            {{trap.name}}
+                        </ion-item>
+                    </ion-list>
+                    <div class="item item-body item-button-right">
+                        {{trap.description}}
+                        <div class="buttons">
+                            <button class="button button-positive" ng-click="oModalEdit.show()">
+                                <i class="icon ion-edit">
+                                </i>
+                            </button>
+                            <button class="button button-assertive" ng-click="delTrap(trap.id)">
+                                <i class="icon ion-trash-a">
+                                </i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="item item-body">
+                        <img class="full-image" ng-click="showPic($index)" ng-repeat="i in trap.images" ng-if="i.main == null" ng-src="{{i}}" style="width:20%; padding: 5px 5px 5px 5px;"/>
+                        <img class="full-image" ng-click="showPic($index)" ng-repeat="i in trap.images" ng-if="i.main != null" ng-src="{{i.main}}" style="width:20%; padding: 5px 5px 5px 5px;"/>
+                    </div>
+                    <div class="item item-icon-right">
+                        Status: {{trap.status}}
+                        <i class="icon ion-android-refresh" ng-click="oModalReset.show()" ng-show="trap.status == 'Captured'">
+                        </i>
+                    </div>
+                </div>
+            </ion-content>
+        </ion-pane>
+        <div class="bar bar-footer">
+            <button class="button icon-left ion-home button-positive" ng-click="goHome()">
+                Home
+            </button>
+            <button class="button icon-left ion-log-out button-assertive" ng-click="logout()">
+                Log Out
+            </button>
+        </div>
+        <script id="templates/modal_edit.html" type="text/ng-template">
+            <ion-modal-view>
+        <ion-header-bar class="bar bar-header bar-positive">
+          <h1 class="title">Update {{appName}}</h1>
+          <button class="button button-clear button-primary" ng-click="cancelUpdate()">Cancel</button>
+        </ion-header-bar>
+        <ion-content class="padding">
+          <div class="list">
+            <label class="item item-input">
+              <span class="input-label">{{appName}} Name</span>
+              <input ng-model="trap.name" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Description</span>
+              <input ng-model="trap.description" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Images</span>
+              <img class="full-image" ng-repeat="i in trap.images" ng-if="i.main == null" ng-src="{{i}}" style="width:20%; padding: 5px 5px 5px 5px;"/>
+              <img class="full-image" ng-repeat="i in trap.images" ng-if="i.main != null" ng-src="{{i.main}}" style="width:20%; padding: 5px 5px 5px 5px;"/>
+            </label>
+            <button class="button button-full button-positive" ng-click="updateTrap(trap)">Update {{appName}}</button>
+          </div>
+        </ion-content>
+      </ion-modal-view>
+        </script>
+        <script id="templates/modal_image.html" type="text/ng-template">
+            <ion-modal-view>
+        <ion-content class="padding">
+          <img ng-if="trap.images[indexOfImage].main == null" ng-src={{trap.images[indexOfImage]}} style="width:100%;overflow: scroll;" ng-click="oModalImage.hide()"/>
+          <img ng-if="trap.images[indexOfImage].main != null" ng-src={{trap.images[indexOfImage].main}} style="width:100%;overflow: scroll;" ng-click="oModalImage.hide()"/>
+        </ion-content>
+      </ion-modal-view>
+        </script>
+        <script id="templates/modal_reset.html" type="text/ng-template">
+            <ion-modal-view>
+        <ion-header-bar class="bar bar-header bar-positive">
+          <h1 class="title">Reset {{appName}}</h1>
+          <button class="button button-clear button-primary" ng-click="oModalReset.hide()">Cancel</button>
+        </ion-header-bar>
+        <ion-content class="padding">
+          <div class="list">
+            <label class="item item-input">
+              <span class="input-label">QR Code</span>
+              <button class="button icon-left ion-qr-scanner button-energized" ng-click="scanBarcode()">Scan</button>
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Reset Comment</span>
+              <input ng-model="trap.comment" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Reset Images</span>
+                <button class="button icon-left ion-camera button-royal" ng-click="takePic()">Take photos</button>
+            </label>
+            <button class="button button-full button-positive" ng-click="resetTrap(trap)">Reset {{appName}}</button>
+          </div>
+          <ion-scroll direction="x" style="overflow: scroll; white-space: nowrap;">
+            <img ng-click="showPic($index)" ng-repeat="image in collection" ng-src="{{image}}" style="width:20%; padding: 5px 5px 5px 5px;"/>
+          </ion-scroll>
+        </ion-content>
+      </ion-modal-view>
+        </script>
+    </body>
+</html>

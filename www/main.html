@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+            <meta content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width" name="viewport">
+                <title>
+                </title>
+                <link href="manifest.json" rel="manifest">
+                    <!-- un-comment this code to enable service worker
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(() => console.log('service worker installed'))
+          .catch(err => console.log('Error', err));
+      }
+    </script>-->
+                    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+                        <link href="css/style.css" rel="stylesheet">
+                            <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+    <link href="css/ionic.app.css" rel="stylesheet">
+    -->
+                            <!-- ionic/angularjs js -->
+                            <script src="lib/ionic/js/ionic.bundle.js">
+                            </script>
+                            <script src="lib/ngCordova/dist/ng-cordova.js">
+                            </script>
+                            <!-- cordova script (this will be a 404 during development) -->
+                            <script src="cordova.js">
+                            </script>
+                            <!-- your app's js -->
+                            <script src="js/app.js">
+                            </script>
+                            <script src="js/main.js">
+                            </script>
+                        </link>
+                    </link>
+                </link>
+            </meta>
+        </meta>
+    </head>
+    <body ng-app="main" ng-controller="MainCtrl">
+        <ion-pane>
+            <ion-header-bar class="bar-stable" align-title="center">
+                <button class="button icon ion-refresh" ng-click="refresh()">
+                    Update
+                </button>
+                <h1 class="title">
+                    Place List
+                </h1>
+                <button class="button icon ion-plus" ng-click="oModalNew.show()">
+                    Add Place
+                </button>
+            </ion-header-bar>
+            <ion-content class="has-header has-footer">
+                <div class="card" ng-repeat="hub in hubs">
+                    <div class="item item-thumbnail-left" ng-click="goHub(hub.id)">
+                        <img ng-if="hub.images.thumbnail == null" ng-src="{{hub.images[0]}}">
+                        <img ng-if="hub.images.thumbnail != null" ng-src="{{hub.images.thumbnail}}">
+                        <h2>{{hub.name}}</h2>
+                    </div>
+                    <div class="item item-text-wrap">
+                        {{hub.description}}
+                        <span class="badge badge-assertive" ng-show="hub.have_captured > 0">
+                            {{hub.have_captured}}/{{hub.total_trap}}
+                        </span>
+                        <span class="badge badge-positive" ng-show="hub.have_captured == 0">
+                            {{hub.have_captured}}/{{hub.total_trap}}
+                        </span>
+                    </div>
+                </div>
+            </ion-content>
+        </ion-pane>
+        <div class="bar bar-footer">
+            <button class="button icon-left ion-home button-positive" ng-click="goHome()">
+                Home
+            </button>
+            <button class="button icon-left ion-document button-energized" ng-click="report()" ng-show="role == 2">
+                Report
+            </button>
+            <button class="button icon-left ion-log-out button-assertive" ng-click="logout()">
+                Log Out
+            </button>
+        </div>
+        <script id="templates/modal_new.html" type="text/ng-template">
+            <ion-modal-view>
+        <ion-header-bar class="bar bar-header bar-positive">
+          <h1 class="title">New Place</h1>
+          <button class="button button-clear button-primary" ng-click="oModalNew.hide()">Cancel</button>
+        </ion-header-bar>
+        <ion-content class="padding">
+          <div class="list">
+            <label class="item item-input">
+              <span class="input-label">Place Name</span>
+              <input ng-model="newHub.name" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Description</span>
+              <input ng-model="newHub.description" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Contact Name</span>
+              <input ng-model="newHub.contact_name" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Contact Number</span>
+              <input ng-model="newHub.contact_number" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Images</span>
+                <button class="button icon-left ion-camera button-royal" ng-click="takePic()">Take photos</button>
+            </label>
+            <div class="item-input" ng-repeat="input in email_inputs">
+                <label class="item-input-wrapper">
+                    <span class="input-label">Alert email</span>
+                    <input type="text" ng-model="input.value" />
+                </label>
+                <button class="button button-small button-balanced" ng-if="$index == email_inputs.length - 1 && $index <= 1" ng-click="addEmailInput($index)">
+                    <i class="icon ion-plus"></i>
+                </button>
+                <button class="button button-small button-assertive" ng-if="$index != email_inputs.length - 1 || $index == 2" ng-click="removeEmailInput($index)">
+                    <i class="icon ion-minus"></i>
+                </button>
+            </div>
+            <div class="item-input" ng-repeat="input in sms_inputs">
+                <label class="item-input-wrapper">
+                    <span class="input-label">Alert sms</span>
+                    <input type="text" ng-model="input.value" />
+                </label>
+                <button class="button button-small button-balanced" ng-if="$index == sms_inputs.length - 1 && $index <= 1" ng-click="addSmsInput($index)">
+                    <i class="icon ion-plus"></i>
+                </button>
+                <button class="button button-small button-assertive" ng-if="$index != sms_inputs.length - 1 || $index == 2" ng-click="removeSmsInput($index)">
+                    <i class="icon ion-minus"></i>
+                </button>
+            </div>
+            <button class="button button-full button-positive" ng-click="addHub(newHub)">Add Place</button>
+          </div>
+          <ion-scroll direction="x" style="overflow: scroll; white-space: nowrap;">
+            <img ng-click="showPic($index)" ng-repeat="image in collection" ng-src="{{image}}" style="width:20%; padding: 5px 5px 5px 5px;"/>
+          </ion-scroll>
+        </ion-content>
+      </ion-modal-view>
+        </script>
+        <script id="templates/modal_image.html" type="text/ng-template">
+            <ion-modal-view>
+        <ion-content class="padding">
+          <img ng-src="{{collection[indexOfImage]}}" style="width:100%;overflow: scroll;" ng-click="oModalImage.hide()"/>
+          <button class="button button-block button-assertive" ng-click="delImage(indexOfImage)">
+            Delete
+          </button>
+        </ion-content>
+      </ion-modal-view>
+        </script>
+    </body>
+</html>

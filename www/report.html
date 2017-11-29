@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+            <meta content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width" name="viewport">
+                <title>
+                </title>
+                <link href="manifest.json" rel="manifest">
+                    <!-- un-comment this code to enable service worker
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(() => console.log('service worker installed'))
+          .catch(err => console.log('Error', err));
+      }
+    </script>-->
+                    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+                        <link href="css/style.css" rel="stylesheet">
+                            <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+    <link href="css/ionic.app.css" rel="stylesheet">
+    -->
+                            <!-- ionic/angularjs js -->
+                            <script src="lib/ionic/js/ionic.bundle.js">
+                            </script>
+                            <script src="lib/ngCordova/dist/ng-cordova.js">
+                            </script>
+                            <!-- cordova script (this will be a 404 during development) -->
+                            <script src="cordova.js">
+                            </script>
+                            <!-- your app's js -->
+                            <script src="js/app.js">
+                            </script>
+                            <script src="js/report.js">
+                            </script>
+                        </link>
+                    </link>
+                </link>
+            </meta>
+        </meta>
+    </head>
+    <body ng-app="report" ng-controller="ReportCtrl">
+        <ion-pane>
+            <ion-header-bar class="bar-stable">
+                <div>
+                <h1 class="title" ng-show="report_type == 'activation'">
+                    Activation Report Details
+                </h1>
+                <h1 class="title" ng-show="report_type == 'none'">
+                    None
+                </h1>
+                <h1 class="title" ng-show="report_type == 'service'">
+                    Service Report Details
+                </h1>
+                <h1 class="title" ng-show="report_type == 'status'">
+                    Status Report Details
+                </h1>
+                </div>
+            </ion-header-bar>
+            <ion-content class="has-header has-footer">
+                <div class="list" ng-show="report_type=='activation'">
+                    <label class="item item-input item-select">
+                        <span class="input-label">
+                            Date:
+                        </span>
+                        <select ng-model="search_date.date_filter">
+                            <option value="1">
+                                24 Hours
+                            </option>
+                            <option value="2">
+                                3 Days
+                            </option>
+                            <option value="3">
+                                Last week
+                            </option>
+                            <option value="4">
+                                Last Month
+                            </option>
+                            <option value="5">
+                                custom
+                            </option>
+                        </select>
+                    </label>
+                    <label class="item item-input" ng-show="search_date.date_filter == 5">
+                        <span class="input-label">
+                            Start date:
+                        </span>
+                        <input ng-model="search_date.custom_start" type="date">
+                        </input>
+                    </label>
+                    <label class="item item-input" ng-show="search_date.date_filter == 5">
+                        <span class="input-label">
+                            End date:
+                        </span>
+                        <input ng-model="search_date.custom_end" type="date">
+                        </input>
+                    </label>
+                    <label class="item item-input item-select">
+                        <span class="input-label">
+                            Order by:
+                        </span>
+                        <select ng-model="search_date.order">
+                            <option value="1">
+                                Date
+                            </option>
+                            <option value="2">
+                                Location
+                            </option>
+                        </select>
+                    </label>
+                    <ion-checkbox ng-checked="hub.checked" ng-model="hub.checked" ng-repeat="hub in hubs">
+                        {{ hub.name }}
+                    </ion-checkbox>
+                    <button class="button icon-left ion-search button-block" ng-click="getActivationReport()">
+                        Search
+                    </button>
+                    <div class="row" ng-show="reports.length > 0" style="font: small-caption; color:white">
+                        <div class="col" style="max-width: 35px">
+                            No.
+                        </div>
+                        <div class="col">
+                            Activation Time/Date
+                        </div>
+                        <div class="col">
+                            Location Name
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            Location Description
+                        </div>
+                        <div class="col">
+                            {{appName}} Name
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{appName}} Description
+                        </div>
+                        <div class="col">
+                            Activated No. of Times
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            Person in Charge
+                        </div>
+                        <div class="col">
+                            Reset Time/Date
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            Remarks
+                        </div>
+                    </div>
+                    <div class="row" ng-repeat="report in reports" ng-show="reports.length > 0" style="font: small-caption; color:white">
+                        <div class="col" style="max-width: 35px">
+                            {{$index}}
+                        </div>
+                        <div class="col">
+                            {{report.activated_at | date: 'HH:mm yyyy/MM/dd'}}
+                        </div>
+                        <div class="col">
+                            {{report.location_name}}
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{report.location_description}}
+                        </div>
+                        <div class="col">
+                            {{report.trap_name}}
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{report.trap_description}}
+                        </div>
+                        <div class="col">
+                            {{report.activated_count}}
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{report.contact_name}}
+                        </div>
+                        <div class="col">
+                            {{report.reset_at | date: 'HH:mm yyyy/MM/dd'}}
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{report.reset_comment}}
+                        </div>
+                    </div>
+                </div>
+                <div class="list" ng-show="report_type=='service'">
+                    <label class="item item-input">
+                        <span class="input-label">
+                            Start month-year:
+                        </span>
+                        <input ng-model="search_date.start_ym" type="month">
+                        </input>
+                    </label>
+                    <label class="item item-input">
+                        <span class="input-label">
+                            End month-year:
+                        </span>
+                        <input ng-model="search_date.end_ym" type="month">
+                        </input>
+                    </label>
+                    <button class="button icon-left ion-search button-block" ng-click="getServiceReport()">
+                        Search
+                    </button>
+                    <div class="row" ng-show="reports.length > 0" style="font: small-caption; color:white">
+                        <div class="col" style="max-width: 35px">
+                            No.
+                        </div>
+                        <div class="col">
+                            Location Name
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            Location Description
+                        </div>
+                        <div class="col">
+                            {{appName}} Name
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{appName}} Description
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            Person in Charge
+                        </div>
+                        <div class="col">
+                            Activated Time/Date
+                        </div>
+                        <div class="col">
+                            Reset Time/Date
+                        </div>
+                        <div class="col">
+                            Response Times
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            Remarks
+                        </div>
+                    </div>
+                    <div class="row" ng-repeat="report in reports" ng-show="reports.length > 0" style="font: small-caption; color:white">
+                        <div class="col" style="max-width: 35px">
+                            {{$index}}
+                        </div>
+                        <div class="col">
+                            {{report.location_name}}
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{report.location_description}}
+                        </div>
+                        <div class="col">
+                            {{report.trap_name}}
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{report.trap_description}}
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{report.contact_name}}
+                        </div>
+                        <div class="col">
+                            {{report.activated_at | date: 'HH:mm yyyy/MM/dd'}}
+                        </div>
+                        <div class="col">
+                            {{report.reset_at | date: 'HH:mm yyyy/MM/dd'}}
+                        </div>
+                        <div class="col">
+                            {{report.response_time}}
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{report.reset_comment}}
+                        </div>
+                    </div>
+                </div>
+                <div class="list" ng-show="report_type=='status'">
+                    <ion-checkbox ng-checked="hub.checked" ng-model="hub.checked" ng-repeat="hub in hubs">
+                        {{ hub.name }}
+                    </ion-checkbox>
+                    <button class="button icon-left ion-search button-block" ng-click="getStatusReport()">
+                        Search
+                    </button>
+                    <div class="row" ng-show="reports.length > 0" style="font: small-caption; color:white">
+                        <div class="col" style="max-width: 35px">
+                            No.
+                        </div>
+                        <div class="col">
+                            Location Name
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            Location Description
+                        </div>
+                        <div class="col">
+                            {{appName}} Name
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{appName}} Description
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            Contact Person
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            Contact Number
+                        </div>
+                        <div class="col">
+                            Readliness Date
+                        </div>
+                        <div class="col">
+                            Setup By
+                        </div>
+                    </div>
+                    <div class="row" ng-repeat="report in reports" ng-show="reports.length > 0" style="font: small-caption; color:white">
+                        <div class="col" style="max-width: 35px">
+                            {{$index}}
+                        </div>
+                        <div class="col">
+                            {{report.location_name}}
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{report.location_description}}
+                        </div>
+                        <div class="col">
+                            {{report.trap_name}}
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{report.trap_description}}
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{report.contact_name}}
+                        </div>
+                        <div class="col" ng-show="orientation == 'landscape'">
+                            {{report.contact_number}}
+                        </div>
+                        <div class="col">
+                            {{report.ready_at | date: 'HH:mm yyyy/MM/dd'}}
+                        </div>
+                        <div class="col">
+                            {{report.setup_by}}
+                        </div>
+                    </div>
+                </div>
+            </ion-content>
+        </ion-pane>
+        <div class="bar bar-footer">
+            <button class="button icon-left ion-home button-positive" ng-click="goHome()">
+                Home
+            </button>
+            <button class="button icon-left ion-document button-energized" ng-click="report()" ng-show="role == 2">
+                Report
+            </button>
+            <button class="button icon-left ion-log-out button-assertive" ng-click="logout()">
+                Log Out
+            </button>
+        </div>
+    </body>
+</html>

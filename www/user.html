@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+            <meta content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width" name="viewport">
+                <title>
+                </title>
+                <link href="manifest.json" rel="manifest">
+                    <!-- un-comment this code to enable service worker
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(() => console.log('service worker installed'))
+          .catch(err => console.log('Error', err));
+      }
+    </script>-->
+                    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+                        <link href="css/style.css" rel="stylesheet">
+                            <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+    <link href="css/ionic.app.css" rel="stylesheet">
+    -->
+                            <!-- ionic/angularjs js -->
+                            <script src="lib/ionic/js/ionic.bundle.js">
+                            </script>
+                            <script src="lib/ngCordova/dist/ng-cordova.js">
+                            </script>
+                            <!-- cordova script (this will be a 404 during development) -->
+                            <script src="cordova.js">
+                            </script>
+                            <!-- your app's js -->
+                            <script src="js/app.js">
+                            </script>
+                            <script src="js/user.js">
+                            </script>
+                        </link>
+                    </link>
+                </link>
+            </meta>
+        </meta>
+    </head>
+    <body ng-app="user" ng-controller="UserCtrl">
+        <ion-pane>
+            <ion-header-bar class="bar-stable">
+                <h1 class="title">
+                    User Details
+                </h1>
+            <button class="button icon-left ion-arrow-return-left button-energized pull-right" ng-click="return()">
+                Return
+            </button>
+            </ion-header-bar>
+            <ion-content class="has-header has-footer">
+                <div class="card">
+                    <ion-list>
+                        <ion-item>
+                            User Name: {{user.name}}
+                        </ion-item>
+                    </ion-list>
+                    <div class="item item-body item-button-right">
+                        Login Name: {{user.login_name}}
+                        <div class="buttons">
+                            <button class="button button-positive" ng-click="oModalEdit.show()">
+                                <i class="icon ion-edit">
+                                </i>
+                            </button>
+                            <button class="button button-assertive" ng-click="delUser(user.id)">
+                                <i class="icon ion-trash-a">
+                                </i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="item item-icon-right">
+                        Role: {{user.role_name}}
+                        </i>
+                    </div>
+                </div>
+            </ion-content>
+        </ion-pane>
+        <div class="bar bar-footer">
+            <button class="button icon-left ion-home button-positive" ng-click="goHome()">
+                Home
+            </button>
+            <button class="button icon-left ion-log-out button-assertive" ng-click="logout()">
+                Log Out
+            </button>
+        </div>
+        <script id="templates/modal_edit.html" type="text/ng-template">
+            <ion-modal-view>
+        <ion-header-bar class="bar bar-header bar-positive">
+          <h1 class="title">Update User</h1>
+          <button class="button button-clear button-primary" ng-click="cancelUpdate()">Cancel</button>
+        </ion-header-bar>
+        <ion-content class="padding">
+          <div class="list">
+            <label class="item item-input">
+              <span class="input-label">User Name</span>
+              <input ng-model="user.name" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Login Name</span>
+              <input ng-model="user.login_name" type="text">
+            </label>
+            <label class="item item-input">
+              <span class="input-label">Password</span>
+              <input ng-model="user.pwd" type="text">            
+            </label>
+            <label class="item item-input item-select">
+              <span class="input-label">Role</span>
+              <select ng-model="user.role">
+                <option value="2">Manager</option>
+                <option value="3">User</option>
+              <select>
+            </label>
+            <button class="button button-full button-positive" ng-click="updateUser(user)">Update User</button>
+          </div>
+        </ion-content>
+      </ion-modal-view>
+        </script>
+    </body>
+</html>
